@@ -143,11 +143,36 @@ saveBtn.addEventListener('click', async () => {
                 savedMessage.textContent = '✓ Settings saved and mic switched!';
             }, 500);
         } else {
-            savedMessage.textContent = '✓ Settings saved! You can close this tab.';
+            // Not listening - initialize the microphone NOW while this page is open!
+            savedMessage.textContent = '⏳ Initializing microphone...';
             savedMessage.classList.add('show');
+
+            // Create offscreen document
+            await chrome.runtime.sendMessage({ type: 'START_OFFSCREEN' });
+
+            // Wait a moment for offscreen to load
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Start listening - this will call getUserMedia in the offscreen document
+            await chrome.runtime.sendMessage({
+                type: 'START_LISTENING',
+                deviceId: selectedDeviceId
+            });
+
+            // Wait a moment for initialization to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Check if it worked
+            const newStatus = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+
+            if (newStatus?.isListening) {
+                savedMessage.textContent = '✓ Ready! Listening for claps. You can close this tab.';
+            } else {
+                savedMessage.textContent = '✓ Settings saved! Click Start in popup to begin.';
+            }
         }
     } catch (error) {
-        console.error('Error restarting:', error);
+        console.error('Error saving:', error);
         savedMessage.textContent = '✓ Settings saved! You can close this tab.';
         savedMessage.classList.add('show');
     }
