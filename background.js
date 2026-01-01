@@ -122,8 +122,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         case 'STOP_LISTENING':
             isListening = false;
+            // Respond to popup first
+            sendResponse({ success: true });
             // Forward to offscreen
-            chrome.runtime.sendMessage({ type: 'STOP_LISTENING' });
+            chrome.runtime.sendMessage({ type: 'STOP_LISTENING' }).catch(() => { });
             break;
     }
 });

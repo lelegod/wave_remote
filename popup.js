@@ -83,6 +83,12 @@ toggleBtn.addEventListener('click', async () => {
             // Stop listening
             await chrome.runtime.sendMessage({ type: 'STOP_LISTENING' });
             isListening = false;
+
+            // Update UI to stopped state
+            statusDot.classList.remove('active');
+            statusText.textContent = 'Ready';
+            toggleBtn.textContent = '🎧 Start Listening';
+            toggleBtn.classList.remove('listening');
         } else {
             // Check if we have permission and a selected device
             if (!hasPermission || !selectedDeviceId) {
@@ -101,13 +107,18 @@ toggleBtn.addEventListener('click', async () => {
             });
 
             isListening = true;
-        }
 
-        // Update UI
-        setTimeout(updateStatus, 300);
+            // Update UI to listening state
+            statusDot.classList.add('active');
+            statusDot.classList.remove('error');
+            statusText.textContent = 'Listening';
+            toggleBtn.textContent = '🔴 Stop Listening';
+            toggleBtn.classList.add('listening');
+        }
     } catch (error) {
         console.error('Toggle failed:', error);
         statusText.textContent = 'Error';
+        statusDot.classList.add('error');
     }
 });
 
