@@ -115,13 +115,42 @@ async function loadMicrophones() {
     });
 }
 
-// Save settings
+// Save settings and auto-restart if currently listening
 saveBtn.addEventListener('click', async () => {
+    // Save settings
     await chrome.storage.local.set({
         selectedMicId: selectedDeviceId,
         hasPermission: true
     });
-    savedMessage.classList.add('show');
+
+    // Check if currently listening
+    try {
+        const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+
+        if (status?.isListening) {
+            // Restart with new mic
+            savedMessage.textContent = '↻ Restarting with new microphone...';
+            savedMessage.classList.add('show');
+
+            // Send restart command with new deviceId
+            await chrome.runtime.sendMessage({
+                type: 'RESTART_LISTENING',
+                deviceId: selectedDeviceId
+            });
+
+            // Update message after restart
+            setTimeout(() => {
+                savedMessage.textContent = '✓ Settings saved and mic switched!';
+            }, 500);
+        } else {
+            savedMessage.textContent = '✓ Settings saved! You can close this tab.';
+            savedMessage.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error restarting:', error);
+        savedMessage.textContent = '✓ Settings saved! You can close this tab.';
+        savedMessage.classList.add('show');
+    }
 });
 
 // Initialize

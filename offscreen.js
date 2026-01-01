@@ -310,6 +310,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true });
       break;
 
+    case 'RESTART_LISTENING':
+      // Stop current audio
+      stopListening();
+
+      // Close existing audio context
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+        analyser = null;
+      }
+
+      // Reinitialize with new deviceId
+      console.log('[Wave Remote] Restarting with new device:', message.deviceId);
+      initAudio(message.deviceId).then(() => sendResponse({ success: true }));
+      return true; // Async response
+
     case 'GET_STATUS':
       sendResponse({
         isListening,
