@@ -1,42 +1,50 @@
 {
-  "manifest_version": 3,
-  "name": "Wave Remote",
-  "description": "Control video playback on YouTube and Netflix using acoustic impulses (claps or snaps)",
-  "version": "1.0.0",
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
-  "permissions": [
-    "offscreen",
-    "tabs",
-    "activeTab"
-  ],
-  "host_permissions": [
-    "https://www.youtube.com/*",
-    "https://youtube.com/*",
-    "https://www.netflix.com/*",
-    "https://netflix.com/*"
-  ],
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  },
-  "content_scripts": [
-    {
-      "matches": [
+    "manifest_version": 3,
+    "name": "Wave Remote",
+    "description": "Control video playback on YouTube and Netflix using acoustic impulses (claps or snaps)",
+    "version": "1.0.0",
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "permissions": [
+        "offscreen",
+        "tabs",
+        "activeTab",
+        "storage"
+    ],
+    "options_page": "options.html",
+    "host_permissions": [
         "https://www.youtube.com/*",
         "https://youtube.com/*",
         "https://www.netflix.com/*",
         "https://netflix.com/*"
-      ],
-      "js": ["content.js"],
-      "run_at": "document_idle"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.youtube.com/*",
+                "https://youtube.com/*",
+                "https://www.netflix.com/*",
+                "https://netflix.com/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "action": {
+        "default_title": "Wave Remote",
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png",
+            "128": "icons/icon128.png"
+        }
     }
-  ],
-  "action": {
-    "default_title": "Wave Remote - Acoustic Media Controller",
-    "default_popup": "popup.html"
-  }
 }

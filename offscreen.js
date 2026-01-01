@@ -56,16 +56,29 @@ let waitingForSilence = false;  // After rejecting, wait for silence
 
 /**
  * Initialize the audio processing pipeline
+ * @param {string} deviceId - Optional specific microphone device ID
  */
-async function initAudio() {
+async function initAudio(deviceId = null) {
   try {
+    console.log('[Wave Remote] Initializing audio with deviceId:', deviceId);
+
+    // Build audio constraints
+    const audioConstraints = {
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false
+    };
+
+    // Use specific device if provided
+    if (deviceId) {
+      audioConstraints.deviceId = { ideal: deviceId };
+    }
+
+    console.log('[Wave Remote] Requesting microphone with constraints:', audioConstraints);
+
     // Request microphone access
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false
-      }
+      audio: audioConstraints
     });
 
     // Create audio context
@@ -101,10 +114,10 @@ async function initAudio() {
     });
 
   } catch (error) {
-    console.error('[Wave Remote] Failed to initialize audio:', error);
+    console.error('[Wave Remote] Failed to initialize audio:', error.name, error.message);
     chrome.runtime.sendMessage({
       type: 'OFFSCREEN_ERROR',
-      error: error.message
+      error: `${error.name}: ${error.message}`
     });
   }
 }
@@ -287,7 +300,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         startListening();
         sendResponse({ success: true });
       } else {
-        initAudio().then(() => sendResponse({ success: true }));
+        // Pass deviceId if provided
+        initAudio(message.deviceId).then(() => sendResponse({ success: true }));
       }
       return true; // Async response
 
@@ -314,9 +328,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// INITIALIZATION
-
-// Auto-start when the offscreen document loads
-initAudio();
-
-console.log('[Wave Remote] Offscreen document loaded');
+console.log('[Wave Remote] Offscreen document loaded (waiting for start command)');
