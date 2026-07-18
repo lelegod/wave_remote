@@ -1,4 +1,5 @@
-import { commandForClapCount, type WaveMessage, type ClapCommand } from "./messaging/messages";
+import { commandForClapCount } from "./features/clap-control/commands";
+import type { WaveMessage, ClapCommand } from "./shared/types/messaging";
 
 let offscreenCreated = false;
 let creating = false;

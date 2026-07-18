@@ -1,4 +1,4 @@
-import type { ToOffscreen } from "./messaging/messages";
+import type { ToOffscreen } from "./shared/types/messaging";
 
 const CONFIG = {
   HIGH_PASS_FREQUENCY: 2000,
@@ -19,6 +19,7 @@ let lastClapTime = 0;
 let clapCount = 0;
 let clapTimer: ReturnType<typeof setTimeout> | null = null;
 let analysisInterval: ReturnType<typeof setInterval> | null = null;
+let lastAmplitudeSent = 0;
 
 let spikeStartTime: number | null = null;
 let spikeSampleCount = 0;
@@ -73,6 +74,11 @@ function startListening(): void {
       if (amplitude > maxAmplitude) maxAmplitude = amplitude;
     }
     const scaled = (maxAmplitude / 128) * 255;
+    const now = Date.now();
+    if (now - lastAmplitudeSent > 60) {
+      lastAmplitudeSent = now;
+      chrome.runtime.sendMessage({ type: "AMPLITUDE", value: scaled }).catch(() => {});
+    }
     detectClap(scaled);
   }, CONFIG.ANALYSIS_INTERVAL_MS);
 }

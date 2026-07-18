@@ -9,6 +9,7 @@
     "noUnusedParameters": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     "types": ["chrome", "vitest/globals"],
     "outDir": "dist"
   },

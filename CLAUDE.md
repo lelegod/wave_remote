@@ -11,8 +11,8 @@ MV3 uses an offscreen document for microphone access because the service worker 
 - `src/offscreen.ts` — captures the mic and detects claps with the Web Audio API (high-pass filter into an analyser, then impulse validation: a spike that decays back to baseline fast). Sends `CLAP_DETECTED` with a count. Tunable `CONFIG` at the top.
 - `src/background.ts` — service worker. Creates and manages the offscreen document, maps clap count to a command, finds the active YouTube/Netflix tab, relays the command. Not persistent, so it holds no long-lived state.
 - `src/content.ts` — injected on YouTube/Netflix. Acts on the `<video>` element. YouTube seeks directly via `currentTime`; Netflix needs synthetic arrow-key events because its player rejects direct seeking.
-- `src/popup.ts` and `src/options.ts` — UI. Popup toggles listening. Options handles mic permission and device selection.
-- `src/messaging/messages.ts` — typed message contracts for `chrome.runtime` messaging.
+- `src/popup.tsx` and `src/options.tsx` — UI (React). Popup toggles listening. Options handles mic permission and device selection.
+- `src/shared/types/messaging.ts` — typed message contracts for `chrome.runtime` messaging (cross-context protocol).
 
 Signal flow: mic → `offscreen` (detect) → `background` (route) → `content` (act on the video).
 
@@ -24,21 +24,22 @@ The offscreen document is created only when the user clicks Start Listening, nev
 - `src/offscreen.ts` + `offscreen.html` — audio capture and clap detection (tunable `CONFIG` at top)
 - `src/background.ts` — command routing
 - `src/content.ts` — video control
-- `src/popup.ts` + `popup.html`, `src/options.ts` + `options.html` — UI
-- `src/messaging/messages.ts` — typed message contracts
+- `src/popup.tsx` + `popup.html`, `src/options.tsx` + `options.html` — UI entries (React)
+- `src/features/clap-control/` — the core feature: `commands.ts` (clap → command), `Meter.tsx` (live meter)
+- `src/shared/types/messaging.ts` — message contracts (cross-context protocol)
+- `src/shared/components/` — generic shared React components (icons)
+- `src/shared/styles/` — CSS: design tokens + per-surface styles
 
 ## Project structure
 
-The five MV3 entry points (`background.ts`, `content.ts`, `offscreen.ts`, `popup.ts`, `options.ts`) live at `src/` root. `build.mjs` bundles these and `manifest.json` and the HTML files reference them, so they stay at root.
+**Feature-first.** The five MV3 entry points (`background.ts`, `content.ts`, `offscreen.ts`, `popup.tsx`, `options.tsx`) live at `src/` root and *compose* features. `build.mjs` bundles them and `manifest.json` / the HTML files reference them, so they stay at root.
 
-Shared code is grouped by category folder. Put new shared modules in the matching folder, never at `src/` root, and create the folder when its first file lands:
+- `src/features/<name>/` — one self-contained folder per feature: its UI, domain logic, and feature-only types together. Today: `clap-control/` (`commands.ts` clap → command, `Meter.tsx` live meter; the extracted clap detector lands here in Phase 2). Plan 3 adds `telemetry/`, `feedback/`, `onboarding/`.
+- `src/shared/` — cross-feature building blocks only: `types/` (types used beyond one feature, e.g. `messaging.ts` — the `chrome.runtime` protocol consumed by the router and every surface), `components/` (generic UI like icons), `styles/` (design tokens + per-surface CSS).
 
-- `src/messaging/` — `chrome.runtime` message contracts and helpers
-- `src/services/` — cross-context services such as telemetry and storage (Plan 3)
-- `src/audio/` — audio capture and the clap-detection logic extracted from `offscreen` (Phase 2, so the detector can be unit tested)
-- `src/ui/` — shared UI: the live meter component, icons, and design tokens (Plan 2)
+**Rule for types:** a type used beyond its feature goes in `src/shared/types/`; a feature-only type goes in `features/<name>/types.ts`. Business/domain logic never goes in `shared/` — only in the owning feature. (The message protocol is in `shared/types/` because the router and all surfaces depend on it, not just clap-control.)
 
-Only `src/messaging/` exists today. The rest are the designated homes for code arriving in later plans.
+Tests live under `tests/`, never in `src/`: `tests/unit/` (Vitest), `tests/e2e/` (Playwright), `tests/support/` (chrome mock + Vitest setup).
 
 ## Running and testing
 

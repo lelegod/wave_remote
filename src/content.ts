@@ -1,4 +1,4 @@
-import type { ToContent } from "./messaging/messages";
+import type { ToContent } from "./shared/types/messaging";
 
 function getVideoElement(): HTMLVideoElement | null {
   return (

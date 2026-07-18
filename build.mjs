@@ -2,13 +2,17 @@ import * as esbuild from "esbuild";
 import { cp, rm, mkdir } from "node:fs/promises";
 
 const watch = process.argv.includes("--watch");
+// Watch or --dev builds development React (warnings) with source maps.
+// A plain build ships production React (stripped, CSP-safe).
+const dev = watch || process.argv.includes("--dev");
+const mode = dev ? "development" : "production";
 
 const entries = [
   "src/background.ts",
   "src/offscreen.ts",
   "src/content.ts",
-  "src/popup.ts",
-  "src/options.ts"
+  "src/popup.tsx",
+  "src/options.tsx"
 ];
 
 const staticAssets = [
@@ -31,7 +35,10 @@ const options = {
   format: "iife",
   target: "chrome110",
   outdir: "dist",
-  logLevel: "info"
+  logLevel: "info",
+  jsx: "automatic",
+  sourcemap: dev,
+  define: { "process.env.NODE_ENV": JSON.stringify(mode) }
 };
 
 import { existsSync } from "node:fs";
@@ -46,9 +53,9 @@ if (watch) {
   const ctx = await esbuild.context(options);
   await ctx.watch();
   await copyStatic();
-  console.log("watching...");
+  console.log(`watching (${mode})...`);
 } else {
   await esbuild.build(options);
   await copyStatic();
-  console.log("build complete");
+  console.log(`build complete (${mode})`);
 }

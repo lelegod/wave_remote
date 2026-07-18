@@ -1,6 +1,5 @@
-// Every chrome.runtime message in one typed place. Keeps the four contexts in sync.
-
-export const SEEK_SECONDS = 10;
+// Every chrome.runtime message contract in one typed place. Keeps the contexts in sync.
+// Contracts only. Domain logic lives in features, not here.
 
 export type ClapCommand =
   | { type: "TOGGLE_PLAY" }
@@ -11,7 +10,8 @@ export type ClapCommand =
 export type OffscreenToBackground =
   | { type: "CLAP_DETECTED"; count: number }
   | { type: "OFFSCREEN_READY"; status: string }
-  | { type: "OFFSCREEN_ERROR"; error: string };
+  | { type: "OFFSCREEN_ERROR"; error: string }
+  | { type: "AMPLITUDE"; value: number };
 
 // popup -> background
 export type PopupToBackground =
@@ -35,16 +35,3 @@ export type WaveMessage =
   | PopupToBackground
   | ToOffscreen
   | ToContent;
-
-export function commandForClapCount(count: number): ClapCommand | null {
-  switch (count) {
-    case 1:
-      return { type: "TOGGLE_PLAY" };
-    case 2:
-      return { type: "SEEK_FORWARD", seconds: SEEK_SECONDS };
-    case 3:
-      return { type: "SEEK_BACKWARD", seconds: SEEK_SECONDS };
-    default:
-      return null;
-  }
-}

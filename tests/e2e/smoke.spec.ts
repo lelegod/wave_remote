@@ -16,7 +16,9 @@ test("extension loads and popup renders the toggle button", async () => {
 
   const page = await context.newPage();
   await page.goto(`chrome-extension://${extensionId}/popup.html`);
-  await expect(page.locator("#toggleBtn")).toBeVisible();
+  const toggle = page.locator('[data-testid="toggle"]');
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveText(/Start Listening|Stop Listening/);
 
   await context.close();
 });

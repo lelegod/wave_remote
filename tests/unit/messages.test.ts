@@ -1,4 +1,10 @@
-import { commandForClapCount, SEEK_SECONDS } from "../../src/messaging/messages";
+import type { WaveMessage } from "../../src/shared/types/messaging";
+import { commandForClapCount, SEEK_SECONDS } from "../../src/features/clap-control/commands";
+
+test("AMPLITUDE is a valid WaveMessage", () => {
+  const m: WaveMessage = { type: "AMPLITUDE", value: 123 };
+  expect(m.type).toBe("AMPLITUDE");
+});
 
 test("1 clap toggles play", () => {
   expect(commandForClapCount(1)).toEqual({ type: "TOGGLE_PLAY" });
