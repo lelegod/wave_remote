@@ -4,6 +4,7 @@ import { App } from "../../src/popup";
 
 test("shows Start Listening when not listening and setup is complete", async () => {
   const chrome = installChromeMock();
+  (chrome.runtime as unknown as { getManifest: () => { version: string } }).getManifest = () => ({ version: "1.0.0" });
   chrome.storage.local.get.mockResolvedValue({ selectedMicId: "mic1", hasPermission: true });
   chrome.runtime.sendMessage.mockResolvedValue({ isListening: false });
   render(<App />);
@@ -12,6 +13,7 @@ test("shows Start Listening when not listening and setup is complete", async () 
 
 test("shows Error status when a background message fails", async () => {
   const chrome = installChromeMock();
+  (chrome.runtime as unknown as { getManifest: () => { version: string } }).getManifest = () => ({ version: "1.0.0" });
   chrome.storage.local.get.mockResolvedValue({ selectedMicId: "mic1", hasPermission: true });
   chrome.runtime.sendMessage.mockRejectedValue(new Error("no receiver"));
   render(<App />);
@@ -20,6 +22,7 @@ test("shows Error status when a background message fails", async () => {
 
 test("clicking Start sends START_OFFSCREEN then START_LISTENING", async () => {
   const chrome = installChromeMock();
+  (chrome.runtime as unknown as { getManifest: () => { version: string } }).getManifest = () => ({ version: "1.0.0" });
   chrome.storage.local.get.mockResolvedValue({ selectedMicId: "mic1", hasPermission: true });
   chrome.runtime.sendMessage.mockResolvedValue({ isListening: false });
   render(<App />);
@@ -30,4 +33,13 @@ test("clicking Start sends START_OFFSCREEN then START_LISTENING", async () => {
     expect(types).toContain("START_OFFSCREEN");
     expect(types).toContain("START_LISTENING");
   });
+});
+
+test("popup shows the floating feedback button", async () => {
+  const chrome = installChromeMock();
+  (chrome.runtime as unknown as { getManifest: () => { version: string } }).getManifest = () => ({ version: "1.0.0" });
+  chrome.storage.local.get.mockResolvedValue({ selectedMicId: "mic1", hasPermission: true });
+  chrome.runtime.sendMessage.mockResolvedValue({ isListening: false });
+  render(<App />);
+  expect(await screen.findByTestId("fb-open")).toBeInTheDocument();
 });

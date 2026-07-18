@@ -22,3 +22,21 @@ test("extension loads and popup renders the toggle button", async () => {
 
   await context.close();
 });
+
+test("options page shows the intent question", async () => {
+  const context: BrowserContext = await chromium.launchPersistentContext("", {
+    headless: false,
+    args: [`--disable-extensions-except=${distPath}`, `--load-extension=${distPath}`]
+  });
+
+  // Find the service worker to read the extension id.
+  let [sw] = context.serviceWorkers();
+  if (!sw) sw = await context.waitForEvent("serviceworker");
+  const extensionId = new URL(sw.url()).host;
+
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${extensionId}/options.html`);
+  await expect(page.getByText(/what will you use wave remote for/i)).toBeVisible();
+
+  await context.close();
+});

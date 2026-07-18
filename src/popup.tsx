@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useRef, useState } from "react";
 import { WaveMark, StopIcon, PlayIcon } from "./shared/components/icons";
 import { Meter, type MeterController } from "./features/clap-control/Meter";
+import { FeedbackWidget } from "./features/feedback/FeedbackWidget";
 import type { WaveMessage } from "./shared/types/messaging";
 import "./shared/styles/tokens.css";
 import "./shared/styles/popup.css";
@@ -109,6 +110,8 @@ export function App() {
           </button>
         )}
       </div>
+
+      <FeedbackWidget inline />
     </div>
   );
 }

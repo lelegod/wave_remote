@@ -1,10 +1,15 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import { WaveMark, MicIcon } from "./shared/components/icons";
+import { FeedbackWidget } from "./features/feedback/FeedbackWidget";
+import { insert } from "./shared/supabase";
+import { coarseOs } from "./shared/config";
 import "./shared/styles/tokens.css";
 import "./shared/styles/options.css";
 
 type Permission = "prompt" | "granted" | "denied";
+
+const INTENTS = ["Cooking", "Accessibility", "Working out", "Just curious", "Other"];
 
 export function App() {
   const [permission, setPermission] = useState<Permission>("prompt");
@@ -12,6 +17,15 @@ export function App() {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [intentPicked, setIntentPicked] = useState(false);
+  const [intentError, setIntentError] = useState(false);
+
+  async function pickIntent(usecase: string): Promise<void> {
+    setIntentError(false);
+    const ok = await insert("intents", { usecase, version: chrome.runtime.getManifest().version, os: coarseOs() });
+    if (ok) setIntentPicked(true);
+    else setIntentError(true);
+  }
 
   // Load available microphones (same logic as the original options.ts)
   async function loadMicrophones(): Promise<void> {
@@ -162,6 +176,22 @@ export function App() {
       </div>
 
       <div className="wr-card">
+        <div className="wr-card-title">What will you use Wave Remote for?</div>
+        {intentPicked ? (
+          <p className="wr-desc" data-testid="intent-thanks">Thanks, that helps us make it better.</p>
+        ) : (
+          <div className="wr-intent-options">
+            {INTENTS.map((usecase) => (
+              <button type="button" key={usecase} className="wr-chip" onClick={() => void pickIntent(usecase)}>
+                {usecase}
+              </button>
+            ))}
+          </div>
+        )}
+        {intentError && <p className="wr-desc" data-testid="intent-error">Could not save, please try again.</p>}
+      </div>
+
+      <div className="wr-card">
         <div className="wr-card-title">
           <span className="wr-icon"><MicIcon size={16} /></span>
           Microphone Permission
@@ -209,6 +239,8 @@ export function App() {
           {savedMessage && <p className="wr-saved-message">{savedMessage}</p>}
         </div>
       )}
+
+      <FeedbackWidget />
     </div>
   );
 }

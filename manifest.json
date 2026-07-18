@@ -19,7 +19,8 @@
         "https://www.youtube.com/*",
         "https://youtube.com/*",
         "https://www.netflix.com/*",
-        "https://netflix.com/*"
+        "https://netflix.com/*",
+        "https://*.supabase.co/*"
     ],
     "background": {
         "service_worker": "background.js"

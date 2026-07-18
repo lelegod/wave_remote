@@ -1,11 +1,19 @@
 import * as esbuild from "esbuild";
 import { cp, rm, mkdir } from "node:fs/promises";
 
+// Load .env (gitignored) so SUPABASE_* can be injected at build time. In CI these come from real env vars.
+try { process.loadEnvFile(".env"); } catch {}
+
 const watch = process.argv.includes("--watch");
 // Watch or --dev builds development React (warnings) with source maps.
 // A plain build ships production React (stripped, CSP-safe).
 const dev = watch || process.argv.includes("--dev");
 const mode = dev ? "development" : "production";
+
+// A production build with no Supabase creds would silently drop all intent/feedback. Warn loudly.
+if (mode === "production" && (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY)) {
+  console.warn("[build] WARNING: SUPABASE_URL / SUPABASE_ANON_KEY are not set. This production build will NOT record intent or feedback. Set them in .env (see .env.example).");
+}
 
 const entries = [
   "src/background.ts",
@@ -38,7 +46,11 @@ const options = {
   logLevel: "info",
   jsx: "automatic",
   sourcemap: dev,
-  define: { "process.env.NODE_ENV": JSON.stringify(mode) }
+  define: {
+    "process.env.NODE_ENV": JSON.stringify(mode),
+    "process.env.SUPABASE_URL": JSON.stringify(process.env.SUPABASE_URL || ""),
+    "process.env.SUPABASE_ANON_KEY": JSON.stringify(process.env.SUPABASE_ANON_KEY || "")
+  }
 };
 
 import { existsSync } from "node:fs";

@@ -51,6 +51,12 @@ function handleClap(count: number): void {
   if (command) void sendCommand(command);
 }
 
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.runtime.openOptionsPage();
+  }
+});
+
 chrome.runtime.onMessage.addListener((message: WaveMessage, _sender, sendResponse) => {
   switch (message.type) {
     case "CLAP_DETECTED":

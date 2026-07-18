@@ -34,3 +34,6 @@ body { padding: 40px 24px; }
 .wr-save-row { display: flex; gap: 12px; margin-top: 22px; }
 
 .wr-saved-message { color: var(--wr-accent); font-size: 13.5px; margin-top: 14px; }
+.wr-intent-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.wr-chip { background: var(--wr-panel); border: 1px solid var(--wr-hairline); color: var(--wr-text); border-radius: 999px; padding: 8px 14px; cursor: pointer; font: inherit; font-size: 13px; }
+.wr-chip:hover { border-color: var(--wr-accent); color: var(--wr-accent); }
