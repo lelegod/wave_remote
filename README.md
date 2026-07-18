@@ -22,15 +22,30 @@ Once installed, simply grant microphone access and start the extension.
 ## 🚀 Installation (Developer Mode)
 
 1.  Clone or download this repository.
-2.  Open Chrome and navigate to `chrome://extensions/`.
-3.  Toggle **Developer mode** (top right corner).
-4.  Click **Load unpacked**.
-5.  Select the folder containing this extension's files.
-6.  Open the extension popup and grant microphone permissions!
+2.  Run `npm install && npm run build` to bundle the extension into `dist/`.
+3.  Open Chrome and navigate to `chrome://extensions/`.
+4.  Toggle **Developer mode** (top right corner).
+5.  Click **Load unpacked**.
+6.  Select the `dist/` folder.
+7.  Open the extension popup and grant microphone permissions!
+
+## 🧑‍💻 Development
+
+The extension is written in TypeScript and bundled with esbuild.
+
+*   `npm install` — install dependencies
+*   `npm run build` — bundle `src/*.ts` into `dist/`
+*   `npm run watch` — rebuild on change
+*   `npm test` — run the Vitest unit tests
+*   `npm run test:e2e` — run the Playwright end-to-end test (loads the built extension)
+*   `npm run typecheck` — type-check with `tsc`
+
+Source lives in `src/`: entry points at the root, shared code in category folders (`messaging/`, and later `services/`, `audio/`, `ui/`). See `CLAUDE.md` for architecture.
 
 ## 🛠️ Tech Stack
 
 *   **Manifest V3**: Compliant with the latest Chrome Extension standards.
+*   **TypeScript + esbuild**: Typed source bundled into `dist/`.
 *   **Web Audio API**: Real-time audio analysis using the `AudioContext` and `AnalyserNode` APIs.
 *   **Offscreen Documents**: Uses the `chrome.offscreen` API to access the microphone securely in the background.
 
