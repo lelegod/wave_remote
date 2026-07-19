@@ -19,12 +19,20 @@ export function App() {
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [intentPicked, setIntentPicked] = useState(false);
   const [intentError, setIntentError] = useState(false);
+  const [otherOpen, setOtherOpen] = useState(false);
+  const [otherText, setOtherText] = useState("");
 
   async function pickIntent(usecase: string): Promise<void> {
     setIntentError(false);
     const ok = await insert("intents", { usecase, version: chrome.runtime.getManifest().version, os: coarseOs() });
     if (ok) setIntentPicked(true);
     else setIntentError(true);
+  }
+
+  // "Other" opens a free-text box so we capture use cases we did not anticipate.
+  async function submitOther(): Promise<void> {
+    const text = otherText.trim();
+    if (text) await pickIntent(text);
   }
 
   // Load available microphones (same logic as the original options.ts)
@@ -179,10 +187,31 @@ export function App() {
         <div className="wr-card-title">What will you use Wave Remote for?</div>
         {intentPicked ? (
           <p className="wr-desc" data-testid="intent-thanks">Thanks, that helps us make it better.</p>
+        ) : otherOpen ? (
+          <div className="wr-intent-other">
+            <input
+              type="text"
+              className="wr-input"
+              data-testid="intent-other-input"
+              placeholder="Tell us how you use it"
+              value={otherText}
+              autoFocus
+              onChange={(e) => setOtherText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") void submitOther(); }}
+            />
+            <button type="button" className="wr-btn" data-testid="intent-other-submit" disabled={!otherText.trim()} onClick={() => void submitOther()}>
+              Submit
+            </button>
+          </div>
         ) : (
           <div className="wr-intent-options">
             {INTENTS.map((usecase) => (
-              <button type="button" key={usecase} className="wr-chip" onClick={() => void pickIntent(usecase)}>
+              <button
+                type="button"
+                key={usecase}
+                className="wr-chip"
+                onClick={() => (usecase === "Other" ? setOtherOpen(true) : void pickIntent(usecase))}
+              >
                 {usecase}
               </button>
             ))}

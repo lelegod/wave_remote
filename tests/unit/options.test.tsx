@@ -43,3 +43,22 @@ test("shows the intent question and records a pick", async () => {
   expect(JSON.parse(fetchMock.mock.calls[0][1].body).usecase).toBe("Cooking");
   await waitFor(() => expect(screen.getByTestId("intent-thanks")).toBeInTheDocument());
 });
+
+test("choosing Other reveals a text box and submits the typed use case", async () => {
+  setup();
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: /^other$/i }));
+
+  const input = screen.getByTestId("intent-other-input");
+  const submit = screen.getByTestId("intent-other-submit");
+  // Submit is disabled until something is typed.
+  expect(submit).toBeDisabled();
+
+  fireEvent.change(input, { target: { value: "  Gaming  " } });
+  fireEvent.click(submit);
+  await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body).usecase).toBe("Gaming");
+  await waitFor(() => expect(screen.getByTestId("intent-thanks")).toBeInTheDocument());
+});

@@ -37,3 +37,7 @@ body { padding: 40px 24px; }
 .wr-intent-options { display: flex; flex-wrap: wrap; gap: 8px; }
 .wr-chip { background: var(--wr-panel); border: 1px solid var(--wr-hairline); color: var(--wr-text); border-radius: 999px; padding: 8px 14px; cursor: pointer; font: inherit; font-size: 13px; }
 .wr-chip:hover { border-color: var(--wr-accent); color: var(--wr-accent); }
+.wr-intent-other { display: flex; gap: 8px; }
+.wr-input { flex: 1; min-width: 0; background: var(--wr-panel); border: 1px solid var(--wr-hairline); color: var(--wr-text); border-radius: var(--wr-radius); padding: 12px 14px; font: inherit; font-size: 13.5px; }
+.wr-input:focus { outline: none; border-color: var(--wr-accent); }
+.wr-btn:disabled { opacity: 0.5; cursor: not-allowed; }
