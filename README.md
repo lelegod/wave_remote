@@ -39,8 +39,16 @@ The extension is written in TypeScript and bundled with esbuild.
 *   `npm test` — run the Vitest unit tests
 *   `npm run test:e2e` — run the Playwright end-to-end test (loads the built extension)
 *   `npm run typecheck` — type-check with `tsc`
+*   `npm run package` — zip a built `dist/` into `wave-remote-<version>.zip` for the store
 
 Source lives in `src/`: entry points at the root, shared code in category folders (`messaging/`, and later `services/`, `audio/`, `ui/`). See `CLAUDE.md` for architecture.
+
+## 📦 Releases
+
+CI runs on every push/PR (typecheck, unit tests, build, e2e). Releases are triggered
+manually from the GitHub Actions UI (Actions → Release → Run workflow), which
+publishes to the Chrome Web Store. See [`docs/deploy.md`](docs/deploy.md) for the
+secrets setup and release steps.
 
 ## 🛠️ Tech Stack
 

@@ -53,6 +53,8 @@ Tests: `npm test` (Vitest unit), `npm run test:e2e` (Playwright loads the built 
 
 **Git.** Never commit, including when running as or dispatching subagents. When your work is done, stage only the files you changed, then ask the user to review. Each subagent stages only its own task's files. Never stage changes made by the user or another agent, even if they are left unstaged. Committing is always the user's action.
 
+**Branch names.** `type/short-desc`, where `type` is a conventional-commit prefix (`feat`, `fix`, `chore`, `docs`, `refactor`) and `short-desc` is a kebab-case summary. Examples: `feat/cicd-pipeline`, `fix/netflix-seek-race`, `chore/bump-deps`, `docs/deploy-guide`.
+
 **Task review gate.** When running a multi-task plan with subagents, pause after each task subagent completes and ask the user to review the staged work before starting the next task. Do not chain tasks without the user's review.
 
 ## Roadmap

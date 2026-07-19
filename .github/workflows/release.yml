@@ -1,0 +1,35 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to the store (false = upload-only dry run, leaves a draft)"
+        type: boolean
+        default: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Production build (prod env injected)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: npm run build
+      - run: npm run package
+      # Run once with publish unchecked for an upload-only dry run (draft in the
+      # CWS dashboard), then run again with publish checked. See docs/deploy.md.
+      - name: Publish to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5
+        with:
+          file-path: wave-remote-*.zip
+          extension-id: ${{ secrets.CWS_EXTENSION_ID }}
+          client-id: ${{ secrets.CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish: ${{ inputs.publish }}
