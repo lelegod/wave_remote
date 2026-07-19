@@ -41,3 +41,6 @@ body { padding: 40px 24px; }
 .wr-input { flex: 1; min-width: 0; background: var(--wr-panel); border: 1px solid var(--wr-hairline); color: var(--wr-text); border-radius: var(--wr-radius); padding: 12px 14px; font: inherit; font-size: 13.5px; }
 .wr-input:focus { outline: none; border-color: var(--wr-accent); }
 .wr-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.wr-disclosure { margin-top: 18px; text-align: center; font-size: 12px; color: var(--wr-text-dim, #888); }
+.wr-disclosure .wr-link { color: inherit; text-decoration: underline; }

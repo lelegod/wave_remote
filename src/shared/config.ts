@@ -5,6 +5,9 @@
 export const SUPABASE_URL = process.env.SUPABASE_URL || "https://REPLACE_PROJECT.supabase.co";
 export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "REPLACE_ANON_KEY";
 
+// Hosted privacy policy. The release workflow updates this gist from docs/privacy-policy.md.
+export const PRIVACY_POLICY_URL = "https://gist.github.com/lelegod/1bc682f12a899766c153a921c0df9674";
+
 // Pragmatic email check: non-empty, one @, a dot in the domain, no spaces.
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

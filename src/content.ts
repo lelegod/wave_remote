@@ -1,4 +1,5 @@
 import type { ToContent } from "./shared/types/messaging";
+import { track } from "./features/telemetry/track";
 
 function getVideoElement(): HTMLVideoElement | null {
   return (
@@ -7,11 +8,12 @@ function getVideoElement(): HTMLVideoElement | null {
   );
 }
 
-function togglePlay(): void {
+function togglePlay(): boolean {
   const video = getVideoElement();
-  if (!video) return;
+  if (!video) return false;
   if (video.paused) void video.play();
   else video.pause();
+  return true;
 }
 
 function dispatchArrowKey(key: "ArrowRight" | "ArrowLeft"): void {
@@ -34,38 +36,50 @@ function dispatchArrowKey(key: "ArrowRight" | "ArrowLeft"): void {
   document.dispatchEvent(event);
 }
 
-function seekForward(seconds: number): void {
+function seekForward(seconds: number): boolean {
   const video = getVideoElement();
-  if (!video) return;
+  if (!video) return false;
   if (window.location.hostname.includes("netflix.com")) {
     dispatchArrowKey("ArrowRight");
-    return;
+    return true;
   }
   video.currentTime = Math.min(video.currentTime + seconds, video.duration);
+  return true;
 }
 
-function seekBackward(seconds: number): void {
+function seekBackward(seconds: number): boolean {
   const video = getVideoElement();
-  if (!video) return;
+  if (!video) return false;
   if (window.location.hostname.includes("netflix.com")) {
     dispatchArrowKey("ArrowLeft");
-    return;
+    return true;
   }
   video.currentTime = Math.max(video.currentTime - seconds, 0);
+  return true;
+}
+
+function currentSite(): "youtube" | "netflix" {
+  return window.location.hostname.includes("netflix.com") ? "netflix" : "youtube";
+}
+
+// Emit command_executed on success, error:no_video otherwise.
+function reportCommand(command: "playpause" | "seek_fwd" | "seek_back", acted: boolean): void {
+  if (acted) track("command_executed", { command, site: currentSite() });
+  else track("error", { where: "no_video" });
 }
 
 chrome.runtime.onMessage.addListener((message: ToContent, _sender, sendResponse) => {
   switch (message.type) {
     case "TOGGLE_PLAY":
-      togglePlay();
+      reportCommand("playpause", togglePlay());
       sendResponse({ success: true });
       break;
     case "SEEK_FORWARD":
-      seekForward(message.seconds ?? 10);
+      reportCommand("seek_fwd", seekForward(message.seconds ?? 10));
       sendResponse({ success: true });
       break;
     case "SEEK_BACKWARD":
-      seekBackward(message.seconds ?? 10);
+      reportCommand("seek_back", seekBackward(message.seconds ?? 10));
       sendResponse({ success: true });
       break;
     case "GET_VIDEO_STATUS": {

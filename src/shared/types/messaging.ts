@@ -30,8 +30,16 @@ export type ToOffscreen =
 // background -> content
 export type ToContent = ClapCommand | { type: "GET_VIDEO_STATUS" };
 
+// any context -> background
+export type ToBackgroundTelemetry = {
+  type: "TRACK_EVENT";
+  name: string;
+  props?: Record<string, string | number | boolean>;
+};
+
 export type WaveMessage =
   | OffscreenToBackground
   | PopupToBackground
   | ToOffscreen
-  | ToContent;
+  | ToContent
+  | ToBackgroundTelemetry;

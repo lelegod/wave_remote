@@ -3,5 +3,4 @@ dist/
 wave-remote-*.zip
 test-results/
 playwright-report/
-docs/superpowers
 .env

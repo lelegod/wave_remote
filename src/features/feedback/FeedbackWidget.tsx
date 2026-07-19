@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { insert } from "../../shared/supabase";
 import { coarseOs, isValidEmail } from "../../shared/config";
+import { getInstallId } from "../telemetry/track";
 import "../../shared/styles/feedback.css";
 
 type Status = "idle" | "sending" | "sent" | "error";
@@ -37,7 +38,14 @@ export function FeedbackWidget({ inline = false }: { inline?: boolean }) {
     }
     setEmailError(false);
     setStatus("sending");
-    const ok = await insert("feedback", { sentiment, message, email: trimmedEmail, version, os });
+    const ok = await insert("feedback", {
+      sentiment,
+      message,
+      email: trimmedEmail,
+      install_id: await getInstallId(),
+      version,
+      os
+    });
     setStatus(ok ? "sent" : "error");
   }
 

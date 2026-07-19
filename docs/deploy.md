@@ -15,11 +15,31 @@ Create a Supabase project and note its **Project URL** and **anon key** (Setting
 API). The anon key is public by design; data is guarded by insert-only row-level
 security. Apply the migrations in `supabase/migrations/` in timestamp order by
 pasting each into the project's SQL editor. Each schema change is a new
-timestamped file in that folder, so the history is tracked in git.
+timestamped file in that folder, so the history is tracked in git. The `init`
+migration creates the `events` table and `install_id` columns for telemetry.
 
 For local development, create a **separate dev project** and put its creds in a
 local `.env` (copy `.env.example`). Test builds then write into the dev database,
 never production. The release workflow always injects the prod creds.
+
+### Data disclosure (required before publishing)
+
+Wave Remote sends anonymous usage telemetry (see `docs/privacy-policy.md`). Before
+publishing you must:
+
+1. Set the `PRIVACY_POLICY_URL` (in `src/shared/config.ts`) as the privacy policy URL
+   in the Web Store Developer Dashboard. It points at a gist that the release workflow
+   keeps in sync (see below).
+2. Complete the dashboard Privacy tab data-use disclosures to match what the code
+   sends: a random install id, event names, extension version, coarse OS, and the use-case answer chosen or typed on the settings page. No audio, no page content, and no PII beyond the optional feedback email and any text a user chooses to type into the use-case box.
+3. Certify Limited Use: data is used only to improve the product, never sold.
+
+The release workflow syncs the hosted privacy policy gist from `docs/privacy-policy.md`
+on every publish (`publish` checked), so the public policy always matches what ships.
+This needs a `GIST_TOKEN` repo secret: a GitHub personal access token with `gist`
+scope (the default `GITHUB_TOKEN` cannot edit gists). The gist id is set in
+`release.yml`. `docs/privacy-policy.md` is the source of truth; edit it, never the gist
+directly.
 
 ### 2. Chrome Web Store API credentials
 

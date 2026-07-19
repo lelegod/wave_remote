@@ -62,3 +62,52 @@ test("choosing Other reveals a text box and submits the typed use case", async (
   expect(JSON.parse(fetchMock.mock.calls[0][1].body).usecase).toBe("Gaming");
   await waitFor(() => expect(screen.getByTestId("intent-thanks")).toBeInTheDocument());
 });
+
+test("granting mic permission records a mic_permission event and intents carry install_id", async () => {
+  setup();
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+  vi.stubGlobal("fetch", fetchMock);
+  (globalThis as unknown as { chrome: { storage: { local: { get: ReturnType<typeof vi.fn> } } } })
+    .chrome.storage.local.get.mockResolvedValue({ installId: "id-xyz" });
+  render(<App />);
+
+  fireEvent.click(screen.getByRole("button", { name: /cooking/i }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  const intentBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+  expect(intentBody.install_id).toBe("id-xyz");
+});
+
+test("granting mic permission emits a mic_permission granted event", async () => {
+  setup();
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+  const chromeMock = (globalThis as unknown as { chrome: { runtime: { sendMessage: ReturnType<typeof vi.fn> } } }).chrome;
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: /grant microphone access/i }));
+  await waitFor(() =>
+    expect(chromeMock.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "TRACK_EVENT", name: "mic_permission", props: { result: "granted" } })
+    )
+  );
+});
+
+test("denying mic permission emits a mic_permission denied event", async () => {
+  setup();
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+  const chromeMock = (globalThis as unknown as { chrome: { runtime: { sendMessage: ReturnType<typeof vi.fn> } } }).chrome;
+  (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("denied"));
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: /grant microphone access/i }));
+  await waitFor(() =>
+    expect(chromeMock.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "TRACK_EVENT", name: "mic_permission", props: { result: "denied" } })
+    )
+  );
+});
+
+test("options page shows the anonymous-usage disclosure with a privacy link", async () => {
+  setup();
+  render(<App />);
+  const link = screen.getByTestId("privacy-link");
+  expect(link).toHaveAttribute("href", expect.stringContaining("gist.github.com"));
+  expect(screen.getByText(/anonymous usage/i)).toBeInTheDocument();
+});

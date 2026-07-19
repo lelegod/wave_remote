@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { WaveMark, MicIcon } from "./shared/components/icons";
 import { FeedbackWidget } from "./features/feedback/FeedbackWidget";
 import { insert } from "./shared/supabase";
-import { coarseOs } from "./shared/config";
+import { coarseOs, PRIVACY_POLICY_URL } from "./shared/config";
+import { track, getInstallId } from "./features/telemetry/track";
 import "./shared/styles/tokens.css";
 import "./shared/styles/options.css";
 
@@ -24,7 +25,12 @@ export function App() {
 
   async function pickIntent(usecase: string): Promise<void> {
     setIntentError(false);
-    const ok = await insert("intents", { usecase, version: chrome.runtime.getManifest().version, os: coarseOs() });
+    const ok = await insert("intents", {
+      usecase,
+      install_id: await getInstallId(),
+      version: chrome.runtime.getManifest().version,
+      os: coarseOs()
+    });
     if (ok) setIntentPicked(true);
     else setIntentError(true);
   }
@@ -90,10 +96,12 @@ export function App() {
       stream.getTracks().forEach((track) => track.stop());
 
       setPermission("granted");
+      track("mic_permission", { result: "granted" });
       await loadMicrophones();
     } catch (error) {
       console.error("Permission denied:", error);
       setPermission("denied");
+      track("mic_permission", { result: "denied" });
     } finally {
       setRequesting(false);
     }
@@ -270,6 +278,13 @@ export function App() {
       )}
 
       <FeedbackWidget />
+
+      <p className="wr-disclosure">
+        Wave Remote sends anonymous usage stats to improve the product.{" "}
+        <a className="wr-link" data-testid="privacy-link" href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
+          Privacy policy
+        </a>
+      </p>
     </div>
   );
 }
